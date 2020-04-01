@@ -18,48 +18,65 @@ export default class App extends Component {
     pageNr: 1,
   };
 
-  fetchGallerySubmit = query => {
-    this.setState({ isLoading: true, query, pageNr: 1 });
-    ImageAPI.fetchImages(query)
-      .then(({ data }) => {
-        this.setState({ images: data.hits });
-      })
-      .catch(error => this.setState({ error }))
-      .finally(() => this.setState({ isLoading: false }));
+  handleChangeQuery = query => {
+    this.setState({
+      query,
+      pageNr: 1,
+    });
   };
 
-  fetchGalleryClick = () => {
-    const page = this.state.pageNr + 1;
+  handleChangePageNr = () => {
     this.setState(state => ({
-      isLoading: true,
-      pageNr: page,
+      pageNr: this.state.pageNr + 1,
     }));
-    ImageAPI.fetchImages(this.state.query, page)
-      .then(({ data }) => {
-        this.setState(state => ({ images: [...state.images, ...data.hits] }));
-      })
-      .catch(error => this.setState({ error }))
-      .finally(() => this.setState({ isLoading: false }));
-      
   };
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.query !== this.state.query) {
+      this.setState({ isLoading: true });
+      ImageAPI.fetchImages(this.state.query, this.state.pageNr)
+        .then(({ data }) => {
+          this.setState({ images: data.hits });
+        })
+        .catch(error => this.setState({ error }))
+        .finally(() => this.setState({ isLoading: false }));
+    }
+
+    if (prevState.pageNr !== this.state.pageNr && this.state.pageNr !== 1) {
+      this.setState({ isLoading: true });
+      ImageAPI.fetchImages(this.state.query, this.state.pageNr)
+        .then(({ data }) => {
+          this.setState(state => ({ images: [...state.images, ...data.hits] }));
+        })
+        .catch(error => this.setState({ error }))
+        .finally(() => {
+          this.setState({ isLoading: false });
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth',
+          });
+        });
+    }
+  }
 
   render() {
     const { images, isLoading, error } = this.state;
 
     return (
       <>
-        <SearchBar onSubmit={this.fetchGallerySubmit} />
+        <SearchBar onChangeQuery={this.handleChangeQuery} />
         {error && <Error text={error.message} />}
+
         {isLoading && (
           <div className={styles.Center}>
             <Loader type="Bars" color="#1E90FF" height={150} width={150} />
           </div>
         )}
-        {images.length > 0 && (
+
+        {images.length > 0 && !isLoading && (
           <>
-            {' '}
             <ImageGallery images={images} />
-            <Button onfetchGalleryClick={this.fetchGalleryClick} />{' '}
+            <Button onChangePageNr={this.handleChangePageNr} />
           </>
         )}
       </>
