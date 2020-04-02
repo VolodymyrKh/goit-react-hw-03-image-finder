@@ -4,8 +4,8 @@ import Error from './Error/Error.js';
 import * as ImageAPI from './Services/Api';
 import Loader from 'react-loader-spinner';
 import Button from './Button/Button';
+import Modal from './Modal/Modal';
 import styles from './App.module.css';
-
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import ImageGallery from './ImageGallery/ImageGallery';
 
@@ -13,6 +13,8 @@ export default class App extends Component {
   state = {
     images: [],
     isLoading: false,
+    isOpenModal: false,
+    currentLargeImageURL: '',
     error: null,
     query: '',
     pageNr: 1,
@@ -31,6 +33,14 @@ export default class App extends Component {
     }));
   };
 
+  openModal = largeImageURL => {
+    this.setState({ isOpenModal: true,  currentLargeImageURL: largeImageURL });
+  };
+
+  closeModal = () => {
+    this.setState({ isOpenModal: false });
+  };
+
   componentDidUpdate(prevProps, prevState) {
     if (prevState.query !== this.state.query) {
       this.setState({ isLoading: true });
@@ -40,27 +50,31 @@ export default class App extends Component {
         })
         .catch(error => this.setState({ error }))
         .finally(() => this.setState({ isLoading: false }));
-    }
-
-    if (prevState.pageNr !== this.state.pageNr && this.state.pageNr !== 1) {
+    } else if (prevState.pageNr !== this.state.pageNr) {
       this.setState({ isLoading: true });
       ImageAPI.fetchImages(this.state.query, this.state.pageNr)
         .then(({ data }) => {
           this.setState(state => ({ images: [...state.images, ...data.hits] }));
-        })
-        .catch(error => this.setState({ error }))
-        .finally(() => {
-          this.setState({ isLoading: false });
           window.scrollTo({
             top: document.documentElement.scrollHeight,
             behavior: 'smooth',
           });
+        })
+        .catch(error => this.setState({ error }))
+        .finally(() => {
+          this.setState({ isLoading: false });
         });
     }
   }
 
   render() {
-    const { images, isLoading, error } = this.state;
+    const {
+      images,
+      isLoading,
+      error,
+      isOpenModal,
+      currentLargeImageURL,
+    } = this.state;
 
     return (
       <>
@@ -73,11 +87,15 @@ export default class App extends Component {
           </div>
         )}
 
-        {images.length > 0 && !isLoading && (
+        {images.length > 0 && (
           <>
-            <ImageGallery images={images} />
+            <ImageGallery images={images} onOpenModal={this.openModal} />
             <Button onChangePageNr={this.handleChangePageNr} />
           </>
+        )}
+
+        {isOpenModal && (
+          <Modal image={currentLargeImageURL} onCloseModal={this.closeModal} />
         )}
       </>
     );
