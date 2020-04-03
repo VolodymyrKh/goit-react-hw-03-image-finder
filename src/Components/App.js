@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import SearchBar from './SearchBar/SearchBar';
 import Error from './Error/Error.js';
 import * as ImageAPI from './Services/Api';
@@ -10,7 +11,7 @@ import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import ImageGallery from './ImageGallery/ImageGallery';
 
 export default class App extends Component {
-  state = {
+  static defaultProps = {
     images: [],
     isLoading: false,
     isOpenModal: false,
@@ -18,6 +19,31 @@ export default class App extends Component {
     error: null,
     query: '',
     pageNr: 1,
+  };
+
+  static propTypes = {
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        webformatURL: PropTypes.string.isRequired,
+        largeImageURL: PropTypes.string.isRequired,
+      }).isRequired,
+    ).isRequired,
+    isLoading: PropTypes.bool.isRequired,
+    isOpenModal: PropTypes.bool.isRequired,
+    currentLargeImageURL: PropTypes.string.isRequired,
+    query: PropTypes.string.isRequired,
+    pageNr: PropTypes.number.isRequired,
+  };
+
+  state = {
+    images: this.props.images,
+    isLoading: this.props.isLoading,
+    isOpenModal: this.props.isLoading,
+    currentLargeImageURL: this.props.currentLargeImageURL,
+    error: this.props.error,
+    query: this.props.query,
+    pageNr: this.props.pageNr,
   };
 
   handleChangeQuery = query => {
@@ -34,7 +60,7 @@ export default class App extends Component {
   };
 
   openModal = largeImageURL => {
-    this.setState({ isOpenModal: true,  currentLargeImageURL: largeImageURL });
+    this.setState({ isOpenModal: true, currentLargeImageURL: largeImageURL });
   };
 
   closeModal = () => {

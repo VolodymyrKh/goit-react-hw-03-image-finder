@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 
 import styles from './SearchBar.module.css';
 
 export default class SearchBar extends Component {
+  static propTypes = {
+    onChangeQuery: PropTypes.func.isRequired,
+  };
+
   state = { query: '' };
 
   handleChange = e => {
@@ -13,7 +17,6 @@ export default class SearchBar extends Component {
   handleSubmit = e => {
     e.preventDefault();
     this.props.onChangeQuery(this.state.query);
-    
   };
 
   render() {

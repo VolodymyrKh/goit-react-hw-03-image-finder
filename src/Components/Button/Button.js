@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import styles from './Button.module.css';
 
 const Button = ({ onChangePageNr }) => (
@@ -7,4 +8,7 @@ const Button = ({ onChangePageNr }) => (
   </button>
 );
 
+Button.propTypes = {
+  onChangePageNr: PropTypes.func.isRequired,
+};
 export default Button;
